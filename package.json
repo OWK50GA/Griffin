@@ -1,0 +1,27 @@
+{
+  "name": "griffin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Griffin Service for cross-chain interoperability in payments",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OWK50GA/Griffin"
+  },
+  "workspaces":[
+    "packages/*",
+    "website"
+  ],
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.24.0",
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "tsup": "^8.5.0"
+  }
+}
