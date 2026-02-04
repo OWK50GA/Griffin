@@ -1,8 +1,9 @@
+import { Signature, TypedData } from "starknet";
 export interface Intent {
     id: string;
     userAddress: string;
-    fromChain: number;
-    toChain: number;
+    fromChain: string;
+    toChain: string;
     fromToken: string;
     toToken: string;
     amount: string;
@@ -80,15 +81,18 @@ export interface FeeInfo {
     slippageFee?: string;
     total: string;
 }
+export type SignatureType = Signature | any;
+export type IntentMessageType = TypedData | any;
 export interface CreateIntentRequest {
-    fromChain: number;
-    toChain: number;
+    fromChain: string;
+    toChain: string;
     fromToken: string;
     toToken: string;
     amount: string;
     recipient: string;
     userAddress: string;
-    signature?: string;
+    requestSignature?: SignatureType;
+    requestMessage: IntentMessageType;
 }
 export interface IntentResponse {
     intentId: string;
@@ -121,21 +125,40 @@ export interface ErrorResponse {
         requestId?: string;
     };
 }
-export interface ChainInfo {
-    chainId: number;
+export type ChainInfo = {
+    chainId: string;
     name: string;
     symbol: string;
     rpcUrl: string;
     blockExplorer: string;
     isTestnet: boolean;
-    supportedTokens: string[];
-}
+};
 export interface TokenInfo {
     address: string;
     symbol: string;
     name: string;
     decimals: number;
-    chainId: number;
+    chainId: ChainInfo['chainId'];
     logoUrl?: string;
+}
+export interface HealthStatus {
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    timestamp: string;
+    version: string;
+    dependencies: {
+        database: DependencyStatus;
+        redis: DependencyStatus;
+        blockchain: {
+            starknet: DependencyStatus;
+        };
+        external: {
+            oneInch: DependencyStatus;
+        };
+    };
+}
+export interface DependencyStatus {
+    status: 'healthy' | 'degraded' | 'unhealthy';
+    responseTime?: number;
+    error?: string;
 }
 //# sourceMappingURL=index.d.ts.map

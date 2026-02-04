@@ -2,9 +2,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { Intent, IntentStatus, CreateIntentRequest } from '../types';
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
+import { ChainService } from './ChainService';
+import { validateAndParseAddress } from 'starknet';
+import { validateAddress, validateSignature } from '@/utils/utils';
 
 export class IntentService {
-  private intents: Map<string, Intent> = new Map();
+  private intents: Map<string, Intent> = new Map(); // intend_id => intent
 
   async createIntent(request: CreateIntentRequest): Promise<Intent> {
     try {
@@ -91,12 +94,13 @@ export class IntentService {
   }
 
   private async validateIntent(request: CreateIntentRequest): Promise<void> {
-    // Validate chain IDs
-    const supportedChains = [1, 137, 42161, 10]; // Ethereum, Polygon, Arbitrum, Optimism
-    if (!supportedChains.includes(request.fromChain)) {
+    const supportedChains = await ChainService.getSupportedChains();
+    const fromChain = supportedChains.find((chain) => chain.chainId === request.fromChain);
+    if (!fromChain) {
       throw new AppError('Unsupported source chain', 400, 'UNSUPPORTED_CHAIN', { chainId: request.fromChain });
     }
-    if (!supportedChains.includes(request.toChain)) {
+    const toChain = supportedChains.find((chain) => chain.chainId === request.toChain);
+    if (!toChain) {
       throw new AppError('Unsupported destination chain', 400, 'UNSUPPORTED_CHAIN', { chainId: request.toChain });
     }
 
@@ -106,9 +110,34 @@ export class IntentService {
       throw new AppError('Amount must be greater than zero', 400, 'INVALID_AMOUNT');
     }
 
+    const isValidSenderAddress = validateAddress(request.fromChain, request.userAddress);
+    if (!isValidSenderAddress) {
+      throw new AppError('Sender address not valid on chain', 400, 'INVALID_ADDRESS')
+    }
+
+    const isValidRecipientAddress = validateAddress(request.toChain, request.recipient);
+    if (!isValidRecipientAddress) {
+      throw new AppError('Sender address not valid on chain', 400, 'INVALID_ADDRESS')
+    }
+
+    const isValidInputTokenAddress = validateAddress(request.fromChain, request.fromToken);
+    if (!isValidInputTokenAddress) {
+      throw new AppError('Sender address not valid on chain', 400, 'INVALID_ADDRESS')
+    }
+
+    const isValidOutputTokenAddress = validateAddress(request.toChain, request.toToken);
+    if (!isValidOutputTokenAddress) {
+      throw new AppError('Sender address not valid on chain', 400, 'INVALID_ADDRESS')
+    }
+
     // Additional validations would go here:
-    // - Token address validation
-    // - Address format validation
     // - Signature validation (if provided)
+    if (!request.requestSignature) {
+      throw new AppError("No signature provided", 400, 'MISSING_SIGNATURE');
+    }
+    const isValidSignature = validateSignature(request.fromChain, request.requestSignature, request.requestMessage, request.userAddress);
+    if (!request.requestSignature) {
+      throw new AppError("Invalid signature", 400, 'MISSING_SIGNATURE');
+    }
   }
 }

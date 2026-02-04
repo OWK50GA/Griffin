@@ -15,21 +15,9 @@ export declare const config: {
         allowedOrigins: string[];
     };
     blockchain: {
-        ethereum: {
+        starknet: {
             rpcUrl: string;
-            chainId: number;
-        };
-        polygon: {
-            rpcUrl: string;
-            chainId: number;
-        };
-        arbitrum: {
-            rpcUrl: string;
-            chainId: number;
-        };
-        optimism: {
-            rpcUrl: string;
-            chainId: number;
+            chainId: string;
         };
     };
     external: {

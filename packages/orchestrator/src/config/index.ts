@@ -24,21 +24,25 @@ export const config = {
   },
 
   blockchain: { // Change to the chains we are supporting
-    ethereum: {
-      rpcUrl: process.env.ETHEREUM_RPC_URL || '',
-      chainId: 1
-    },
-    polygon: {
-      rpcUrl: process.env.POLYGON_RPC_URL || '',
-      chainId: 137
-    },
-    arbitrum: {
-      rpcUrl: process.env.ARBITRUM_RPC_URL || '',
-      chainId: 42161
-    },
-    optimism: {
-      rpcUrl: process.env.OPTIMISM_RPC_URL || '',
-      chainId: 10
+    // ethereum: {
+    //   rpcUrl: process.env.ETHEREUM_RPC_URL || '',
+    //   chainId: 1
+    // },
+    // polygon: {
+    //   rpcUrl: process.env.POLYGON_RPC_URL || '',
+    //   chainId: 137
+    // },
+    // arbitrum: {
+    //   rpcUrl: process.env.ARBITRUM_RPC_URL || '',
+    //   chainId: 42161
+    // },
+    // optimism: {
+    //   rpcUrl: process.env.OPTIMISM_RPC_URL || '',
+    //   chainId: 10
+    // },
+    starknet: {
+      rpcUrl: process.env.STARKNET_RPC_URL || '',
+      chainId: 'starknet:sepolia'
     }
   },
 

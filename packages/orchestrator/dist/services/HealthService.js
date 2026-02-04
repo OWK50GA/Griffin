@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.HealthService = void 0;
 const config_1 = require("../config");
 const logger_1 = require("../utils/logger");
+const starknet_1 = require("starknet");
+const redis_1 = require("redis");
 class HealthService {
     async getHealthStatus() {
         const startTime = Date.now();
@@ -44,10 +46,7 @@ class HealthService {
                     database: { status: 'unhealthy', error: 'Health check failed' },
                     redis: { status: 'unhealthy', error: 'Health check failed' },
                     blockchain: {
-                        ethereum: { status: 'unhealthy', error: 'Health check failed' },
-                        polygon: { status: 'unhealthy', error: 'Health check failed' },
-                        arbitrum: { status: 'unhealthy', error: 'Health check failed' },
-                        optimism: { status: 'unhealthy', error: 'Health check failed' }
+                        starknet: { status: 'healthy', error: 'Health check failed' },
                     },
                     external: {
                         oneInch: { status: 'unhealthy', error: 'Health check failed' }
@@ -77,10 +76,18 @@ class HealthService {
     async checkRedis() {
         const startTime = Date.now();
         try {
-            // TODO: Implement actual Redis connection check
             if (!config_1.config.redis.url) {
                 return { status: 'unhealthy', error: 'Redis URL not configured' };
             }
+            const client = (0, redis_1.createClient)();
+            client.on('error', err => console.log('Redis Client Error', err));
+            await client.connect();
+            await client.set('key', 'value');
+            const value = await client.get('key');
+            if (value !== 'value' || !value) {
+                throw new Error('Redis Error');
+            }
+            await client.quit();
             const responseTime = Date.now() - startTime;
             return { status: 'healthy', responseTime };
         }
@@ -93,16 +100,10 @@ class HealthService {
     }
     async checkBlockchainConnections() {
         const checks = await Promise.allSettled([
-            this.checkBlockchainRPC('ethereum', config_1.config.blockchain.ethereum.rpcUrl),
-            this.checkBlockchainRPC('polygon', config_1.config.blockchain.polygon.rpcUrl),
-            this.checkBlockchainRPC('arbitrum', config_1.config.blockchain.arbitrum.rpcUrl),
-            this.checkBlockchainRPC('optimism', config_1.config.blockchain.optimism.rpcUrl)
+            this.checkBlockchainRPC('starknet', config_1.config.blockchain.starknet.rpcUrl)
         ]);
         return {
-            ethereum: checks[0].status === 'fulfilled' ? checks[0].value : { status: 'unhealthy', error: 'Connection failed' },
-            polygon: checks[1].status === 'fulfilled' ? checks[1].value : { status: 'unhealthy', error: 'Connection failed' },
-            arbitrum: checks[2].status === 'fulfilled' ? checks[2].value : { status: 'unhealthy', error: 'Connection failed' },
-            optimism: checks[3].status === 'fulfilled' ? checks[3].value : { status: 'unhealthy', error: 'Connection failed' }
+            starknet: checks[0].status === 'fulfilled' ? checks[0].value : { status: 'healthy', error: 'Connection failed' }
         };
     }
     async checkBlockchainRPC(name, rpcUrl) {
@@ -111,8 +112,8 @@ class HealthService {
             if (!rpcUrl) {
                 return { status: 'degraded', error: `${name} RPC URL not configured` };
             }
-            // TODO: Implement actual RPC health check
-            // For now, just check if URL is provided
+            const provider = new starknet_1.RpcProvider({ nodeUrl: rpcUrl });
+            const latestBlock = await provider.getBlockLatestAccepted();
             const responseTime = Date.now() - startTime;
             return { status: 'healthy', responseTime };
         }

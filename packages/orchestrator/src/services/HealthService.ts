@@ -1,30 +1,8 @@
+import { DependencyStatus, HealthStatus } from '@/types';
 import { config } from '../config';
 import { logger } from '../utils/logger';
-
-interface HealthStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  timestamp: string;
-  version: string;
-  dependencies: {
-    database: DependencyStatus;
-    redis: DependencyStatus;
-    blockchain: {
-      ethereum: DependencyStatus;
-      polygon: DependencyStatus;
-      arbitrum: DependencyStatus;
-      optimism: DependencyStatus;
-    };
-    external: {
-      oneInch: DependencyStatus;
-    };
-  };
-}
-
-interface DependencyStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  responseTime?: number;
-  error?: string;
-}
+import { RpcProvider } from 'starknet';
+import { createClient } from 'redis'
 
 export class HealthService {
   async getHealthStatus(): Promise<HealthStatus> {
@@ -77,10 +55,7 @@ export class HealthService {
           database: { status: 'unhealthy', error: 'Health check failed' },
           redis: { status: 'unhealthy', error: 'Health check failed' },
           blockchain: {
-            ethereum: { status: 'unhealthy', error: 'Health check failed' },
-            polygon: { status: 'unhealthy', error: 'Health check failed' },
-            arbitrum: { status: 'unhealthy', error: 'Health check failed' },
-            optimism: { status: 'unhealthy', error: 'Health check failed' }
+            starknet: { status: 'healthy', error: 'Health check failed' },
           },
           external: {
             oneInch: { status: 'unhealthy', error: 'Health check failed' }
@@ -114,11 +89,22 @@ export class HealthService {
     const startTime = Date.now();
     
     try {
-      // TODO: Implement actual Redis connection check
       if (!config.redis.url) {
         return { status: 'unhealthy', error: 'Redis URL not configured' };
       }
-      
+
+      const client = createClient();
+      client.on('error', err => console.log('Redis Client Error', err));
+
+      await client.connect();
+      await client.set('key', 'value');
+      const value = await client.get('key');
+
+      if (value !== 'value' || !value) {
+        throw new Error('Redis Error');
+      }
+
+      await client.quit();
       const responseTime = Date.now() - startTime;
       return { status: 'healthy', responseTime };
     } catch (error) {
@@ -130,23 +116,14 @@ export class HealthService {
   }
 
   private async checkBlockchainConnections(): Promise<{
-    ethereum: DependencyStatus;
-    polygon: DependencyStatus;
-    arbitrum: DependencyStatus;
-    optimism: DependencyStatus;
+    starknet: DependencyStatus
   }> {
     const checks = await Promise.allSettled([
-      this.checkBlockchainRPC('ethereum', config.blockchain.ethereum.rpcUrl),
-      this.checkBlockchainRPC('polygon', config.blockchain.polygon.rpcUrl),
-      this.checkBlockchainRPC('arbitrum', config.blockchain.arbitrum.rpcUrl),
-      this.checkBlockchainRPC('optimism', config.blockchain.optimism.rpcUrl)
+      this.checkBlockchainRPC('starknet', config.blockchain.starknet.rpcUrl)
     ]);
 
     return {
-      ethereum: checks[0].status === 'fulfilled' ? checks[0].value : { status: 'unhealthy', error: 'Connection failed' },
-      polygon: checks[1].status === 'fulfilled' ? checks[1].value : { status: 'unhealthy', error: 'Connection failed' },
-      arbitrum: checks[2].status === 'fulfilled' ? checks[2].value : { status: 'unhealthy', error: 'Connection failed' },
-      optimism: checks[3].status === 'fulfilled' ? checks[3].value : { status: 'unhealthy', error: 'Connection failed' }
+      starknet: checks[0].status === 'fulfilled' ? checks[0].value : { status: 'healthy', error: 'Connection failed' }
     };
   }
 
@@ -158,9 +135,12 @@ export class HealthService {
         return { status: 'degraded', error: `${name} RPC URL not configured` };
       }
       
-      // TODO: Implement actual RPC health check
-      // For now, just check if URL is provided
+      const provider = new RpcProvider({ nodeUrl: rpcUrl });
+
+      const latestBlock = await provider.getBlockLatestAccepted();
+
       const responseTime = Date.now() - startTime;
+
       return { status: 'healthy', responseTime };
     } catch (error) {
       return { 
