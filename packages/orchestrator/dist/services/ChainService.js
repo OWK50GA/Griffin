@@ -3,79 +3,61 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChainService = void 0;
 const errorHandler_1 = require("../middleware/errorHandler");
 class ChainService {
-    supportedChains = [
+    /*
+      STARKNET ONLY FOR FIRST ITERATION
+    */
+    static supportedChains = [
         {
-            chainId: 1,
-            name: 'Ethereum',
-            symbol: 'ETH',
-            rpcUrl: process.env.ETHEREUM_RPC_URL || '',
-            blockExplorer: 'https://etherscan.io',
-            isTestnet: false,
-            supportedTokens: ['0xA0b86a33E6441c8C06DD2b7c94b7E0e8c07e8e8e'] // Mock USDC
-        },
-        {
-            chainId: 137,
-            name: 'Polygon',
-            symbol: 'MATIC',
-            rpcUrl: process.env.POLYGON_RPC_URL || '',
-            blockExplorer: 'https://polygonscan.com',
-            isTestnet: false,
-            supportedTokens: ['0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174'] // Mock USDC
-        },
-        {
-            chainId: 42161,
-            name: 'Arbitrum One',
-            symbol: 'ETH',
-            rpcUrl: process.env.ARBITRUM_RPC_URL || '',
-            blockExplorer: 'https://arbiscan.io',
-            isTestnet: false,
-            supportedTokens: ['0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8'] // Mock USDC
-        },
-        {
-            chainId: 10,
-            name: 'Optimism',
-            symbol: 'ETH',
-            rpcUrl: process.env.OPTIMISM_RPC_URL || '',
-            blockExplorer: 'https://optimistic.etherscan.io',
-            isTestnet: false,
-            supportedTokens: ['0x7F5c764cBc14f9669B88837ca1490cCa17c31607'] // Mock USDC
+            chainId: "starknet:sepolia",
+            name: 'Starknet',
+            symbol: 'Starknet',
+            rpcUrl: "",
+            blockExplorer: "",
+            isTestnet: true,
         }
     ];
     supportedTokens = [
+        // {
+        //   address: '0xA0b86a33E6441c8C06DD2b7c94b7E0e8c07e8e8e',
+        //   symbol: 'USDC',
+        //   name: 'USD Coin',
+        //   decimals: 6,
+        //   chainId: 1,
+        //   logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
+        // },
+        // {
+        //   address: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
+        //   symbol: 'USDC',
+        //   name: 'USD Coin',
+        //   decimals: 6,
+        //   chainId: 137,
+        //   logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
+        // },
+        // {
+        //   address: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
+        //   symbol: 'USDC',
+        //   name: 'USD Coin',
+        //   decimals: 6,
+        //   chainId: 42161,
+        //   logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
+        // },
         {
-            address: '0xA0b86a33E6441c8C06DD2b7c94b7E0e8c07e8e8e',
+            address: '0x0512feac6339ff7889822cb5aa2a86c848e9d392bb0e3e237c008674feed8343',
             symbol: 'USDC',
-            name: 'USD Coin',
+            name: 'Circle USD',
             decimals: 6,
-            chainId: 1,
+            chainId: 'starknet:sepolia',
             logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
         },
         {
-            address: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
-            symbol: 'USDC',
-            name: 'USD Coin',
-            decimals: 6,
-            chainId: 137,
-            logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
-        },
-        {
-            address: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
-            symbol: 'USDC',
-            name: 'USD Coin',
-            decimals: 6,
-            chainId: 42161,
-            logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
-        },
-        {
-            address: '0x7F5c764cBc14f9669B88837ca1490cCa17c31607',
-            symbol: 'USDC',
-            name: 'USD Coin',
-            decimals: 6,
-            chainId: 10,
-            logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
+            address: '0x04718f5a0Fc34cC1AF16A1cdee98fFB20C31f5cD61D6Ab07201858f4287c938D',
+            symbol: 'STRK',
+            name: 'Starknet Token',
+            decimals: 18,
+            chainId: 'starknet:sepolia'
         }
     ];
-    async getSupportedChains() {
+    static async getSupportedChains() {
         return this.supportedChains;
     }
     async getSupportedTokens(chainId) {
@@ -88,10 +70,10 @@ class ChainService {
         }
         return this.supportedTokens;
     }
-    async getChainInfo(chainId) {
+    static async getChainInfo(chainId) {
         return this.supportedChains.find(chain => chain.chainId === chainId) || null;
     }
-    async isChainSupported(chainId) {
+    static async isChainSupported(chainId) {
         return this.supportedChains.some(chain => chain.chainId === chainId);
     }
     async isTokenSupported(tokenAddress, chainId) {

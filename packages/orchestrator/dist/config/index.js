@@ -23,21 +23,25 @@ exports.config = {
         allowedOrigins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000']
     },
     blockchain: {
-        ethereum: {
-            rpcUrl: process.env.ETHEREUM_RPC_URL || '',
-            chainId: 1
-        },
-        polygon: {
-            rpcUrl: process.env.POLYGON_RPC_URL || '',
-            chainId: 137
-        },
-        arbitrum: {
-            rpcUrl: process.env.ARBITRUM_RPC_URL || '',
-            chainId: 42161
-        },
-        optimism: {
-            rpcUrl: process.env.OPTIMISM_RPC_URL || '',
-            chainId: 10
+        // ethereum: {
+        //   rpcUrl: process.env.ETHEREUM_RPC_URL || '',
+        //   chainId: 1
+        // },
+        // polygon: {
+        //   rpcUrl: process.env.POLYGON_RPC_URL || '',
+        //   chainId: 137
+        // },
+        // arbitrum: {
+        //   rpcUrl: process.env.ARBITRUM_RPC_URL || '',
+        //   chainId: 42161
+        // },
+        // optimism: {
+        //   rpcUrl: process.env.OPTIMISM_RPC_URL || '',
+        //   chainId: 10
+        // },
+        starknet: {
+            rpcUrl: process.env.STARKNET_RPC_URL || '',
+            chainId: 'starknet:sepolia'
         }
     },
     external: {

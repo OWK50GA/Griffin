@@ -52,7 +52,7 @@ router.get('/:id', validateIntentId, asyncHandler(async (req: Request, res: Resp
   }
 
   const intentId = req.params.id;
-  const intent = await intentService.getIntent(intentId);
+  const intent = await intentService.getIntent(intentId as string);
   
   if (!intent) {
     throw new AppError('Intent not found', 404, 'INTENT_NOT_FOUND');
@@ -78,7 +78,7 @@ router.put('/:id/execute', validateIntentId, asyncHandler(async (req: Request, r
   }
 
   const intentId = req.params.id;
-  const intent = await intentService.executeIntent(intentId);
+  const intent = await intentService.executeIntent(intentId as string);
   
   const response: IntentResponse = {
     intentId: intent.id,
@@ -99,7 +99,7 @@ router.delete('/:id', validateIntentId, asyncHandler(async (req: Request, res: R
   }
 
   const intentId = req.params.id;
-  await intentService.cancelIntent(intentId);
+  await intentService.cancelIntent(intentId as string);
   
   res.status(204).send();
 }));
