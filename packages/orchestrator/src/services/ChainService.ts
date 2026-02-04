@@ -1,5 +1,6 @@
-import { ChainInfo, TokenInfo } from '../types';
-import { AppError } from '../middleware/errorHandler';
+import { ChainInfo, TokenInfo } from "../types";
+import { AppError } from "../middleware/errorHandler";
+import { getStarknetTokens } from "@/utils/utils";
 
 export class ChainService {
   /* 
@@ -8,65 +9,55 @@ export class ChainService {
   private static supportedChains: ChainInfo[] = [
     {
       chainId: "starknet:sepolia",
-      name: 'Starknet',
-      symbol: 'Starknet',
+      name: "Starknet",
+      symbol: "Starknet",
       rpcUrl: "",
       blockExplorer: "",
       isTestnet: true,
-    }
+    },
   ];
 
-  private supportedTokens: TokenInfo[] = [
-    // {
-    //   address: '0xA0b86a33E6441c8C06DD2b7c94b7E0e8c07e8e8e',
-    //   symbol: 'USDC',
-    //   name: 'USD Coin',
-    //   decimals: 6,
-    //   chainId: 1,
-    //   logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
-    // },
-    // {
-    //   address: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
-    //   symbol: 'USDC',
-    //   name: 'USD Coin',
-    //   decimals: 6,
-    //   chainId: 137,
-    //   logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
-    // },
-    // {
-    //   address: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8',
-    //   symbol: 'USDC',
-    //   name: 'USD Coin',
-    //   decimals: 6,
-    //   chainId: 42161,
-    //   logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
-    // },
-    {
-      address: '0x0512feac6339ff7889822cb5aa2a86c848e9d392bb0e3e237c008674feed8343',
-      symbol: 'USDC',
-      name: 'Circle USD',
-      decimals: 6,
-      chainId: 'starknet:sepolia',
-      logoUrl: 'https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png'
-    },
-    {
-      address: '0x04718f5a0Fc34cC1AF16A1cdee98fFB20C31f5cD61D6Ab07201858f4287c938D',
-      symbol: 'STRK',
-      name: 'Starknet Token',
-      decimals: 18,
-      chainId: 'starknet:sepolia'
-    }
-  ];
+  private supportedTokens: TokenInfo[]
+
+  constructor () {
+    this.supportedTokens = [];
+
+    getStarknetTokens()
+      .then((tokens) => {
+        tokens.forEach((token) => {
+          const equivGriffinToken = {
+            address: token.address,
+            decimals: token.decimals,
+            logoUrl: token.logoUri!,
+            chainId: 'starknet:sepolia', // Change this when deploying to mainnet
+            name: token.name,
+            symbol: token.symbol
+          }
+
+          this.supportedTokens.push(equivGriffinToken);
+        })
+      })
+
+    // Add more functions when adding new chains
+    
+  }
 
   static async getSupportedChains(): Promise<ChainInfo[]> {
-    return this.supportedChains
+    return this.supportedChains;
   }
 
   async getSupportedTokens(chainId?: string): Promise<TokenInfo[]> {
     if (chainId) {
-      const tokens = this.supportedTokens.filter(token => token.chainId === chainId);
+      const tokens = this.supportedTokens.filter(
+        (token) => token.chainId === chainId,
+      );
       if (tokens.length === 0) {
-        throw new AppError('No tokens found for chain', 404, 'NO_TOKENS_FOUND', { chainId });
+        throw new AppError(
+          "No tokens found for chain",
+          404,
+          "NO_TOKENS_FOUND",
+          { chainId },
+        );
       }
       return tokens;
     }
@@ -74,22 +65,36 @@ export class ChainService {
   }
 
   static async getChainInfo(chainId: string): Promise<ChainInfo | null> {
-    return this.supportedChains.find(chain => chain.chainId === chainId) || null;
-  }
-
-  static async isChainSupported(chainId: string): Promise<boolean> {
-    return this.supportedChains.some(chain => chain.chainId === chainId);
-  }
-
-  async isTokenSupported(tokenAddress: string, chainId: string): Promise<boolean> {
-    return this.supportedTokens.some(
-      token => token.address.toLowerCase() === tokenAddress.toLowerCase() && token.chainId === chainId
+    return (
+      this.supportedChains.find((chain) => chain.chainId === chainId) || null
     );
   }
 
-  async getTokenInfo(tokenAddress: string, chainId: string): Promise<TokenInfo | null> {
-    return this.supportedTokens.find(
-      token => token.address.toLowerCase() === tokenAddress.toLowerCase() && token.chainId === chainId
-    ) || null;
+  static async isChainSupported(chainId: string): Promise<boolean> {
+    return this.supportedChains.some((chain) => chain.chainId === chainId);
+  }
+
+  async isTokenSupported(
+    tokenAddress: string,
+    chainId: string,
+  ): Promise<boolean> {
+    return this.supportedTokens.some(
+      (token) =>
+        token.address.toLowerCase() === tokenAddress.toLowerCase() &&
+        token.chainId === chainId,
+    );
+  }
+
+  async getTokenInfo(
+    tokenAddress: string,
+    chainId: string,
+  ): Promise<TokenInfo | null> {
+    return (
+      this.supportedTokens.find(
+        (token) =>
+          token.address.toLowerCase() === tokenAddress.toLowerCase() &&
+          token.chainId === chainId,
+      ) || null
+    );
   }
 }

@@ -1,56 +1,58 @@
-import express, { Express, type Request, type Response } from 'express'
-import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
-import { config } from './config';
-import { logger } from './utils/logger';
-import { errorHandler } from './middleware/errorHandler';
-import { requestLogger } from './middleware/requestLogger';
+import express, { Express, type Request, type Response } from "express";
+import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import { config } from "./config";
+import { logger } from "./utils/logger";
+import { errorHandler } from "./middleware/errorHandler";
+import { requestLogger } from "./middleware/requestLogger";
 
 // Import routes
-import intentRoutes from './routes/intents';
-import quoteRoutes from './routes/quotes';
-import healthRoutes from './routes/health';
-import chainRoutes from './routes/chains';
+import intentRoutes from "./routes/intents";
+import quoteRoutes from "./routes/quotes";
+import healthRoutes from "./routes/health";
+import chainRoutes from "./routes/chains";
 
 const app: Express = express();
 
 // Security middleware
 app.use(helmet());
-app.use(cors({
-  origin: config.cors.allowedOrigins,
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: config.cors.allowedOrigins,
+    credentials: true,
+  }),
+);
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  message: "Too many requests from this IP, please try again later.",
 });
 app.use(limiter);
 
 // Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // Request logging
 app.use(requestLogger);
 
 // API routes
-app.use('/api/v1/intents', intentRoutes);
-app.use('/api/v1/quotes', quoteRoutes);
-app.use('/api/v1/health', healthRoutes);
-app.use('/api/v1/chains', chainRoutes);
+app.use("/api/v1/intents", intentRoutes);
+app.use("/api/v1/quotes", quoteRoutes);
+app.use("/api/v1/health", healthRoutes);
+app.use("/api/v1/chains", chainRoutes);
 
 // 404 handler
-app.use('*', (req: Request, res: Response) => {
+app.use("*", (req: Request, res: Response) => {
   res.status(404).json({
     error: {
-      code: 'NOT_FOUND',
-      message: 'Endpoint not found',
-      timestamp: new Date().toISOString()
-    }
+      code: "NOT_FOUND",
+      message: "Endpoint not found",
+      timestamp: new Date().toISOString(),
+    },
   });
 });
 
