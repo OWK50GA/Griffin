@@ -37,17 +37,20 @@ GET    /api/v1/chains               # Supported chains
 ## Quick Start
 
 1. **Install dependencies**:
+
    ```bash
    pnpm install
    ```
 
 2. **Configure environment**:
+
    ```bash
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
 3. **Start development server**:
+
    ```bash
    pnpm dev
    ```
@@ -63,12 +66,14 @@ GET    /api/v1/chains               # Supported chains
 The orchestrator requires the following environment variables:
 
 ### Required
+
 - `DATABASE_URL`: PostgreSQL connection string
 - `REDIS_URL`: Redis connection string
 - Blockchain RPC URLs for supported chains
 - External API keys (1inch, Thirdweb)
 
 ### Optional
+
 - `PORT`: Server port (default: 3000)
 - `LOG_LEVEL`: Logging level (default: info)
 - `CORS_ORIGINS`: Allowed CORS origins
@@ -119,15 +124,18 @@ src/
 ## External Integrations
 
 ### DEX Providers
+
 - **1inch**: Optimal swap routing and execution
 - **Uniswap**: Decentralized exchange integration
 
 ### Bridge Providers
+
 - **Across**: Fast cross-chain transfers
 - **Stargate**: Stable cross-chain liquidity
 - **Orbiter**: Additional bridge routing
 
 ### Blockchain Infrastructure
+
 - **RPC Providers**: Alchemy, Infura for blockchain connectivity
 - **Event Monitoring**: WebSocket connections for real-time updates
 

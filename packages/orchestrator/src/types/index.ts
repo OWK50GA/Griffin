@@ -3,8 +3,8 @@ import { Signature, TypedData } from "starknet";
 export interface Intent {
   id: string;
   userAddress: string;
-  fromChain: string;
-  toChain: string;
+  fromChain: ChainInfo['chainId'];
+  toChain: ChainInfo['chainId'];
   fromToken: string;
   toToken: string;
   amount: string;
@@ -19,16 +19,17 @@ export interface Intent {
 }
 
 export enum IntentStatus {
-  PENDING = 'pending',
-  VERIFIED = 'verified',
-  EXECUTING = 'executing',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled'
+  PENDING = "pending",
+  VERIFIED = "verified",
+  EXECUTING = "executing",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  CANCELLED = "cancelled",
 }
 
 export interface RouteInfo {
   id: string;
+  serviceId: string;
   steps: RouteStep[];
   totalCost: string;
   estimatedTime: number;
@@ -39,10 +40,10 @@ export interface RouteInfo {
 }
 
 export interface RouteStep {
-  type: 'swap' | 'bridge';
+  type: "swap" | "bridge";
   provider: string;
-  fromChain: number;
-  toChain: number;
+  fromChain: ChainInfo['chainId'];
+  toChain: ChainInfo['chainId'];
   fromToken: string;
   toToken: string;
   amount: string;
@@ -53,10 +54,10 @@ export interface RouteStep {
 export interface TransactionInfo {
   id: string;
   intentId: string;
-  chainId: number;
+  chainId: ChainInfo['chainId'];
   hash?: string;
   status: TransactionStatus;
-  type: 'swap' | 'bridge' | 'approval';
+  type: "swap" | "bridge" | "approval";
   gasUsed?: string;
   gasPrice?: string;
   blockNumber?: number;
@@ -68,17 +69,18 @@ export interface TransactionInfo {
 }
 
 export enum TransactionStatus {
-  PENDING = 'pending',
-  SUBMITTED = 'submitted',
-  CONFIRMED = 'confirmed',
-  FAILED = 'failed'
+  PENDING = "pending",
+  SUBMITTED = "submitted",
+  CONFIRMED = "confirmed",
+  FAILED = "failed",
 }
 
 export interface GasEstimate {
-  gasLimit: string;
+  // gasLimit: string;
   gasPrice: string;
   maxFeePerGas?: string;
   maxPriorityFeePerGas?: string;
+  serviceCost: string,
   totalCost: string;
 }
 
@@ -90,20 +92,20 @@ export interface FeeInfo {
   total: string;
 }
 
-export type SignatureType = Signature | any
+export type SignatureType = Signature | any;
 
-export type IntentMessageType = TypedData | any
+export type IntentMessageType = TypedData | any;
 
 export interface CreateIntentRequest {
-  fromChain: string;
-  toChain: string;
+  fromChain: ChainInfo['chainId'];
+  toChain: ChainInfo['chainId'];
   fromToken: string;
   toToken: string;
   amount: string;
   recipient: string;
   userAddress: string;
   requestSignature?: SignatureType;
-  requestMessage: IntentMessageType
+  requestMessage: IntentMessageType;
 }
 
 export interface IntentResponse {
@@ -116,8 +118,8 @@ export interface IntentResponse {
 }
 
 export interface QuoteRequest {
-  fromChain: number;
-  toChain: number;
+  fromChain: ChainInfo['chainId'];
+  toChain: ChainInfo['chainId'];
   fromToken: string;
   toToken: string;
   amount: string;
@@ -125,11 +127,14 @@ export interface QuoteRequest {
 }
 
 export interface QuoteResponse {
+  serviceId: string,
   routes: RouteInfo[];
   bestRoute?: RouteInfo;
   timestamp: string;
   expiresAt: string;
 }
+
+// Construct a union type from the above sha
 
 export interface ErrorResponse {
   error: {
@@ -150,19 +155,19 @@ export type ChainInfo = {
   isTestnet: boolean;
   // supportedTokens: string[];
   // getSupportedTokens: (chainId: ChainInfo['chainId']) => Promise<TokenInfo[]>
-}
+};
 
 export interface TokenInfo {
   address: string;
   symbol: string;
   name: string;
   decimals: number;
-  chainId: ChainInfo['chainId'];
+  chainId: ChainInfo["chainId"];
   logoUrl?: string;
 }
 
 export interface HealthStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   timestamp: string;
   version: string;
   dependencies: {
@@ -178,7 +183,7 @@ export interface HealthStatus {
 }
 
 export interface DependencyStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   responseTime?: number;
   error?: string;
 }
